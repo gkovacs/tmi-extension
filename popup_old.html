@@ -1,0 +1,28 @@
+<html>
+<head>
+<link rel="import" href="bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+</head>
+<body style="width: 500px">
+<paper-toggle-button checked="true">Enable science on <span id="sitename">somesite.com</span></paper-toggle-button><br><br>
+
+<!--
+Enable science on <span id="sitename">somesite.com</span><br><br>
+Experiment you are currently opted into<br><br>
+Other experiments that are available<br><br>
+-->
+<!-- include a button to leave -->
+<div id="experiment_list"></div>
+
+<br>
+<paper-button raised style="background: #4285f4; color: #fff" id="open_options_page">Options</paper-button>
+
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+
+<script src="bower_components/async/dist/async.min.js"></script>
+<script src="bower_components/js-yaml/dist/js-yaml.min.js"></script>
+<script src="memoize.js"></script>
+<script src="background_common.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

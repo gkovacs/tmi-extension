@@ -1,0 +1,7 @@
+title: Your Bing Searches
+matches:
+  - 'bing.com'
+scripts:
+  - /lib/common_lib.js
+  - /lib/querystring.js
+  - index.js
