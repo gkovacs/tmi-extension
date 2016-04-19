@@ -41,7 +41,7 @@ do ->
   ndiv.id = 'autosurvey_content_script_loaded'
   document.body.appendChild(ndiv)
 
-console.log 'content_script loaded'
+console.log 'autosurvey_content_script_loaded'
 
 sendBackground = (type, data, callback) ->
   chrome.runtime.sendMessage {type, data}, (response) ->
@@ -51,4 +51,4 @@ sendBackground = (type, data, callback) ->
 load_experiment_for_location = (location) ->
   sendBackground 'load_experiment_for_location', {location}
 
-load_experiment_for_location window.location.href
+#load_experiment_for_location window.location.href

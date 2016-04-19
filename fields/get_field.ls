@@ -174,6 +174,16 @@ export getfields = (fieldname_list, callback) ->
   if callback?
     callback output
 
+export getfields_uncached = (fieldname_list, callback) ->
+  output = {}
+  real_fieldname_list <- resolve_aliases fieldname_list
+  <- async.eachSeries real_fieldname_list, (name, ncallback) ->
+    val <- getfield_uncached name
+    output[name] = val
+    ncallback()
+  if callback?
+    callback output
+
 export get_field_info = memoizeSingleAsync (callback) ->
   field_info_text <- $.get 'fields/field_info.yaml'
   field_info = jsyaml.safeLoad field_info_text

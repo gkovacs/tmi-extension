@@ -366,8 +366,186 @@
         return callback(results);
       });
     },
+    chrome_history_pages_compressed: function(callback){
+      return getcomp('chrome_history_pages', function(results){
+        return callback(LZString.compressToBase64(JSON.stringify(results)));
+      });
+    },
     chrome_history_visits: function(callback){
       return getcomp('chrome_history_pages', function(results){
+        var url_list, seen_urls, i$, len$, x, url, url_to_visits;
+        url_list = [];
+        seen_urls = {};
+        for (i$ = 0, len$ = results.length; i$ < len$; ++i$) {
+          x = results[i$];
+          if (x == null) {
+            continue;
+          }
+          url = x.url;
+          if (url == null || url === '') {
+            continue;
+          }
+          if (seen_urls[url] != null) {
+            continue;
+          }
+          seen_urls[url] = true;
+          url_list.push(url);
+        }
+        url_to_visits = {};
+        return async.eachSeries(url_list, function(url, donecb){
+          return chrome.history.getVisits({
+            url: url
+          }, function(visits){
+            url_to_visits[url] = visits;
+            return donecb();
+          });
+        }, function(){
+          return callback(url_to_visits);
+        });
+      });
+    },
+    chrome_history_visits_compressed_parts: function(callback){
+      return getcomp('chrome_history_pages', function(results){
+        var url_list, seen_urls, i$, len$, x, url, list_of_url_lists, output;
+        url_list = [];
+        seen_urls = {};
+        for (i$ = 0, len$ = results.length; i$ < len$; ++i$) {
+          x = results[i$];
+          if (x == null) {
+            continue;
+          }
+          url = x.url;
+          if (url == null || url === '') {
+            continue;
+          }
+          if (seen_urls[url] != null) {
+            continue;
+          }
+          seen_urls[url] = true;
+          url_list.push(url);
+        }
+        list_of_url_lists = split_list_by_length(url_list, 100);
+        output = [];
+        return async.eachSeries(list_of_url_lists, function(url_list_part, donecb1){
+          var url_to_visits;
+          url_to_visits = {};
+          return async.eachSeries(url_list_part, function(url, donecb){
+            return chrome.history.getVisits({
+              url: url
+            }, function(visits){
+              url_to_visits[url] = visits;
+              return donecb();
+            });
+          }, function(){
+            output.push(LZString.compressToBase64(JSON.stringify(url_to_visits)));
+            return donecb1();
+          });
+        }, function(){
+          return callback(output);
+        });
+      });
+    },
+    chrome_history_pages_past_24_hours: function(callback){
+      var yesterday;
+      yesterday = Date.now() - 24 * 3600 * 1000;
+      return chrome.history.search({
+        text: '',
+        startTime: yesterday,
+        maxResults: Math.pow(2, 31) - 1
+      }, function(results){
+        return callback(results);
+      });
+    },
+    chrome_history_pages_past_week: function(callback){
+      var yesterday;
+      yesterday = Date.now() - 7 * 24 * 3600 * 1000;
+      return chrome.history.search({
+        text: '',
+        startTime: yesterday,
+        maxResults: Math.pow(2, 31) - 1
+      }, function(results){
+        return callback(results);
+      });
+    },
+    chrome_history_pages_past_month: function(callback){
+      var yesterday;
+      yesterday = Date.now() - 30 * 24 * 3600 * 1000;
+      return chrome.history.search({
+        text: '',
+        startTime: yesterday,
+        maxResults: Math.pow(2, 31) - 1
+      }, function(results){
+        return callback(results);
+      });
+    },
+    chrome_history_visits_past_24_hours: function(callback){
+      return getcomp('chrome_history_pages_past_24_hours', function(results){
+        var url_list, seen_urls, i$, len$, x, url, url_to_visits;
+        url_list = [];
+        seen_urls = {};
+        for (i$ = 0, len$ = results.length; i$ < len$; ++i$) {
+          x = results[i$];
+          if (x == null) {
+            continue;
+          }
+          url = x.url;
+          if (url == null || url === '') {
+            continue;
+          }
+          if (seen_urls[url] != null) {
+            continue;
+          }
+          seen_urls[url] = true;
+          url_list.push(url);
+        }
+        url_to_visits = {};
+        return async.eachSeries(url_list, function(url, donecb){
+          return chrome.history.getVisits({
+            url: url
+          }, function(visits){
+            url_to_visits[url] = visits;
+            return donecb();
+          });
+        }, function(){
+          return callback(url_to_visits);
+        });
+      });
+    },
+    chrome_history_visits_past_week: function(callback){
+      return getcomp('chrome_history_pages_past_week', function(results){
+        var url_list, seen_urls, i$, len$, x, url, url_to_visits;
+        url_list = [];
+        seen_urls = {};
+        for (i$ = 0, len$ = results.length; i$ < len$; ++i$) {
+          x = results[i$];
+          if (x == null) {
+            continue;
+          }
+          url = x.url;
+          if (url == null || url === '') {
+            continue;
+          }
+          if (seen_urls[url] != null) {
+            continue;
+          }
+          seen_urls[url] = true;
+          url_list.push(url);
+        }
+        url_to_visits = {};
+        return async.eachSeries(url_list, function(url, donecb){
+          return chrome.history.getVisits({
+            url: url
+          }, function(visits){
+            url_to_visits[url] = visits;
+            return donecb();
+          });
+        }, function(){
+          return callback(url_to_visits);
+        });
+      });
+    },
+    chrome_history_visits_past_month: function(callback){
+      return getcomp('chrome_history_pages_past_month', function(results){
         var url_list, seen_urls, i$, len$, x, url, url_to_visits;
         url_list = [];
         seen_urls = {};
@@ -419,6 +597,132 @@
       output = prelude.sortBy (.visitTime), output
       callback output
     */,
+    chrome_history_timespent_url_past_24_hours: function(callback){
+      return getcomp('chrome_history_visits_past_24_hours', function(url_to_visits){
+        var url_and_visit_time, url, visits, i$, len$, visit, visitTime, url_to_timespent, yesterday, idx, item, nextitem, visit_duration, nextVisitTime;
+        url_and_visit_time = [];
+        for (url in url_to_visits) {
+          visits = url_to_visits[url];
+          for (i$ = 0, len$ = visits.length; i$ < len$; ++i$) {
+            visit = visits[i$];
+            visitTime = visit.visitTime;
+            url_and_visit_time.push({
+              url: url,
+              visitTime: visitTime
+            });
+          }
+        }
+        url_and_visit_time = prelude.sortBy(function(it){
+          return it.visitTime;
+        }, url_and_visit_time);
+        url_to_timespent = {};
+        yesterday = Date.now() - 24 * 3600 * 1000;
+        for (i$ = 0, len$ = url_and_visit_time.length; i$ < len$; ++i$) {
+          idx = i$;
+          item = url_and_visit_time[i$];
+          visitTime = item.visitTime, url = item.url;
+          if (visitTime < yesterday) {
+            continue;
+          }
+          nextitem = url_and_visit_time[idx + 1];
+          visit_duration = 30 * 1000;
+          if (nextitem != null) {
+            nextVisitTime = nextitem.visitTime;
+            visit_duration = Math.min(visit_duration, nextVisitTime - visitTime);
+          }
+          if (url_to_timespent[url] == null) {
+            url_to_timespent[url] = visit_duration;
+          } else {
+            url_to_timespent[url] += visit_duration;
+          }
+        }
+        return callback(url_to_timespent);
+      });
+    },
+    chrome_history_timespent_url_past_week: function(callback){
+      return getcomp('chrome_history_visits_past_week', function(url_to_visits){
+        var url_and_visit_time, url, visits, i$, len$, visit, visitTime, url_to_timespent, yesterday, idx, item, nextitem, visit_duration, nextVisitTime;
+        url_and_visit_time = [];
+        for (url in url_to_visits) {
+          visits = url_to_visits[url];
+          for (i$ = 0, len$ = visits.length; i$ < len$; ++i$) {
+            visit = visits[i$];
+            visitTime = visit.visitTime;
+            url_and_visit_time.push({
+              url: url,
+              visitTime: visitTime
+            });
+          }
+        }
+        url_and_visit_time = prelude.sortBy(function(it){
+          return it.visitTime;
+        }, url_and_visit_time);
+        url_to_timespent = {};
+        yesterday = Date.now() - 7 * 24 * 3600 * 1000;
+        for (i$ = 0, len$ = url_and_visit_time.length; i$ < len$; ++i$) {
+          idx = i$;
+          item = url_and_visit_time[i$];
+          visitTime = item.visitTime, url = item.url;
+          if (visitTime < yesterday) {
+            continue;
+          }
+          nextitem = url_and_visit_time[idx + 1];
+          visit_duration = 30 * 1000;
+          if (nextitem != null) {
+            nextVisitTime = nextitem.visitTime;
+            visit_duration = Math.min(visit_duration, nextVisitTime - visitTime);
+          }
+          if (url_to_timespent[url] == null) {
+            url_to_timespent[url] = visit_duration;
+          } else {
+            url_to_timespent[url] += visit_duration;
+          }
+        }
+        return callback(url_to_timespent);
+      });
+    },
+    chrome_history_timespent_url_past_month: function(callback){
+      return getcomp('chrome_history_visits_past_month', function(url_to_visits){
+        var url_and_visit_time, url, visits, i$, len$, visit, visitTime, url_to_timespent, yesterday, idx, item, nextitem, visit_duration, nextVisitTime;
+        url_and_visit_time = [];
+        for (url in url_to_visits) {
+          visits = url_to_visits[url];
+          for (i$ = 0, len$ = visits.length; i$ < len$; ++i$) {
+            visit = visits[i$];
+            visitTime = visit.visitTime;
+            url_and_visit_time.push({
+              url: url,
+              visitTime: visitTime
+            });
+          }
+        }
+        url_and_visit_time = prelude.sortBy(function(it){
+          return it.visitTime;
+        }, url_and_visit_time);
+        url_to_timespent = {};
+        yesterday = Date.now() - 30 * 24 * 3600 * 1000;
+        for (i$ = 0, len$ = url_and_visit_time.length; i$ < len$; ++i$) {
+          idx = i$;
+          item = url_and_visit_time[i$];
+          visitTime = item.visitTime, url = item.url;
+          if (visitTime < yesterday) {
+            continue;
+          }
+          nextitem = url_and_visit_time[idx + 1];
+          visit_duration = 30 * 1000;
+          if (nextitem != null) {
+            nextVisitTime = nextitem.visitTime;
+            visit_duration = Math.min(visit_duration, nextVisitTime - visitTime);
+          }
+          if (url_to_timespent[url] == null) {
+            url_to_timespent[url] = visit_duration;
+          } else {
+            url_to_timespent[url] += visit_duration;
+          }
+        }
+        return callback(url_to_timespent);
+      });
+    },
     chrome_history_timespent_url: function(callback){
       return getcomp('chrome_history_visits', function(url_to_visits){
         var url_and_visit_time, url, visits, i$, len$, visit, visitTime, url_to_timespent, idx, item, nextitem, visit_duration, nextVisitTime;
@@ -474,6 +778,69 @@
           url_to_timespent[url] += visit_duration
       callback url_to_timespent
     */,
+    chrome_history_timespent_domain_past_24_hours: function(callback){
+      return getcomp('chrome_history_timespent_url_past_24_hours', function(results){
+        var domain_to_timespent, domain_matcher, url, timespent, domain_matches, domain;
+        domain_to_timespent = {};
+        domain_matcher = new RegExp('://(.[^/]+)(.*)');
+        for (url in results) {
+          timespent = results[url];
+          domain_matches = url.match(domain_matcher);
+          if (domain_matches == null || domain_matches.length < 2) {
+            continue;
+          }
+          domain = domain_matches[1];
+          if (domain_to_timespent[domain] == null) {
+            domain_to_timespent[domain] = timespent;
+          } else {
+            domain_to_timespent[domain] += timespent;
+          }
+        }
+        return callback(domain_to_timespent);
+      });
+    },
+    chrome_history_timespent_domain_past_week: function(callback){
+      return getcomp('chrome_history_timespent_url_past_week', function(results){
+        var domain_to_timespent, domain_matcher, url, timespent, domain_matches, domain;
+        domain_to_timespent = {};
+        domain_matcher = new RegExp('://(.[^/]+)(.*)');
+        for (url in results) {
+          timespent = results[url];
+          domain_matches = url.match(domain_matcher);
+          if (domain_matches == null || domain_matches.length < 2) {
+            continue;
+          }
+          domain = domain_matches[1];
+          if (domain_to_timespent[domain] == null) {
+            domain_to_timespent[domain] = timespent;
+          } else {
+            domain_to_timespent[domain] += timespent;
+          }
+        }
+        return callback(domain_to_timespent);
+      });
+    },
+    chrome_history_timespent_domain_past_month: function(callback){
+      return getcomp('chrome_history_timespent_url_past_month', function(results){
+        var domain_to_timespent, domain_matcher, url, timespent, domain_matches, domain;
+        domain_to_timespent = {};
+        domain_matcher = new RegExp('://(.[^/]+)(.*)');
+        for (url in results) {
+          timespent = results[url];
+          domain_matches = url.match(domain_matcher);
+          if (domain_matches == null || domain_matches.length < 2) {
+            continue;
+          }
+          domain = domain_matches[1];
+          if (domain_to_timespent[domain] == null) {
+            domain_to_timespent[domain] = timespent;
+          } else {
+            domain_to_timespent[domain] += timespent;
+          }
+        }
+        return callback(domain_to_timespent);
+      });
+    },
     chrome_history_timespent_domain: function(callback){
       return getcomp('chrome_history_timespent_url', function(results){
         var domain_to_timespent, domain_matcher, url, timespent, domain_matches, domain;
@@ -540,6 +907,110 @@
           earliest_time = Math.min(earliest_time, timestamp);
         }
         return callback(earliest_time);
+      });
+    },
+    facebook_frontpage: function(callback){
+      return $.get('https://www.facebook.com/', callback);
+    },
+    facebook_userpage: function(callback){
+      return getcomp('facebook_id', function(userpage_url){
+        return $.get(userpage_url, function(data){
+          data = data.split('<!-- <div').join('<div>');
+          data = data.split('</div> -->').join('</div>');
+          return callback(data);
+        });
+      });
+    },
+    facebook_loggedin: function(callback){
+      return getcomp('facebook_id', function(data){
+        return callback(data !== '');
+      });
+    },
+    facebook_shortname: function(callback){
+      return getcomp('facebook_frontpage', function(data){
+        var pagedom, userelem;
+        pagedom = $(data);
+        userelem = pagedom.find('[data-gt=\'{"chrome_nav_item":"timeline_chrome"}\']');
+        if (userelem != null && userelem[0] != null) {
+          userelem = userelem[0];
+        } else {
+          return callback('');
+        }
+        console.log(userelem.innerText);
+        return callback(userelem.innerText);
+      });
+    },
+    facebook_fullname: function(callback){
+      return getcomp('facebook_userpage', function(data){
+        var pagedom, userelem;
+        pagedom = $(data);
+        userelem = pagedom.find('#fb-timeline-cover-name');
+        return callback(userelem.text());
+      });
+    },
+    facebook_id: function(callback){
+      return getcomp('facebook_frontpage', function(data){
+        var pagedom, userelem;
+        pagedom = $(data);
+        userelem = pagedom.find('[data-gt=\'{"chrome_nav_item":"timeline_chrome"}\']');
+        if (userelem != null && userelem[0] != null) {
+          userelem = userelem[0];
+        } else {
+          return callback('');
+        }
+        console.log(userelem.href);
+        return callback(userelem.href);
+      });
+    },
+    facebook_profilepic_small: function(callback){
+      return getcomp('facebook_frontpage', function(data){
+        var pagedom, userelem, imgelem;
+        pagedom = $(data);
+        userelem = pagedom.find('[data-gt=\'{"chrome_nav_item":"timeline_chrome"}\']');
+        imgelem = userelem.find('img');
+        if (imgelem != null && imgelem[0] != null) {
+          imgelem = imgelem[0];
+        } else {
+          return callback('');
+        }
+        console.log(imgelem.src);
+        return callback(imgelem.src);
+      });
+    },
+    facebook_profilepic: function(callback){
+      return getcomp('facebook_userpage', function(data){
+        var pagedom;
+        pagedom = $(data);
+        return callback(pagedom.find('img.profilePic').attr('src'));
+      });
+    },
+    extension_username: function(callback){
+      return callback(localStorage.getItem('username'));
+    },
+    chrome_history_total_timespent: function(callback){
+      return getcomp('chrome_history_timespent_domain', function(chrome_history_timespent_domain){
+        var x, y;
+        return callback(prelude.sum((function(){
+          var ref$, results$ = [];
+          for (x in ref$ = chrome_history_timespent_domain) {
+            y = ref$[x];
+            results$.push(y);
+          }
+          return results$;
+        }())));
+      });
+    },
+    chrome_history_num_days_with_browsing: function(callback){
+      return getcomp('chrome_history_pages', function(chrome_history_pages){
+        var days_with_history, i$, len$, lastVisitTime, days_since_1970, num_days_with_history;
+        days_with_history = {};
+        for (i$ = 0, len$ = chrome_history_pages.length; i$ < len$; ++i$) {
+          lastVisitTime = chrome_history_pages[i$].lastVisitTime;
+          days_since_1970 = Math.round(lastVisitTime / (1000 * 3600 * 24));
+          days_with_history[days_since_1970] = true;
+        }
+        num_days_with_history = Object.keys(days_with_history).length;
+        return callback(num_days_with_history);
       });
     }
   };

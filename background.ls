@@ -73,6 +73,18 @@ sendTab = (type, data, callback) ->
       return
     chrome.tabs.sendMessage tabs[0].id, {type, data}, {}, callback
 
+export split_list_by_length = (list, len) ->
+  output = []
+  curlist = []
+  for x in list
+    curlist.push x
+    if curlist.length == len
+      output.push curlist
+      curlist = []
+  if curlist.length > 0
+    output.push curlist
+  return output
+
 message_handlers = {
   'setvars': (data, callback) ->
     <- async.forEachOfSeries data, (v, k, ncallback) ->
@@ -83,9 +95,14 @@ message_handlers = {
     getfield name, callback
   'getfields': (namelist, callback) ->
     getfields namelist, callback
+  'getfields_uncached': (namelist, callback) ->
+    getfields_uncached namelist, callback
   'requestfields': (info, callback) ->
     {fieldnames} = info
     getfields fieldnames, callback
+  'requestfields_uncached': (info, callback) ->
+    {fieldnames} = info
+    getfields_uncached fieldnames, callback
   'getvar': (name, callback) ->
     getvar name, callback
   'getvars': (namelist, callback) ->
@@ -116,12 +133,22 @@ message_handlers = {
 }
 
 ext_message_handlers = {
+  'is_extension_installed': (info, callback) ->
+    callback true
   # 'getfields': message_handers.getfields
   'requestfields': (info, callback) ->
     confirm_permissions info, (accepted) ->
       if not accepted
         return
       getfields info.fieldnames, (results) ->
+        console.log 'getfields result:'
+        console.log results
+        callback results
+  'requestfields_uncached': (info, callback) ->
+    confirm_permissions info, (accepted) ->
+      if not accepted
+        return
+      getfields_uncached info.fieldnames, (results) ->
         console.log 'getfields result:'
         console.log results
         callback results
@@ -145,21 +172,6 @@ confirm_permissions = (info, callback) ->
     field_info_list.push output
   sendTab 'confirm_permissions', {pagename, fields: field_info_list}, callback
 
-send_pageupdate_to_tab = (tabId) ->
-  chrome.tabs.sendMessage tabId, {event: 'pageupdate'}
-
-onWebNav = (tab) ->
-  if tab.frameId == 0 # top-level frame
-    {tabId} = tab
-    possible_experiments <- list_available_experiments_for_location(tab.url)
-    #if possible_experiments.length > 0
-    #  chrome.pageAction.show(tabId)
-    console.log 'pageupdate sent to tab'
-    send_pageupdate_to_tab(tabId)
-
-chrome.webNavigation.onCommitted.addListener onWebNav
-chrome.webNavigation.onHistoryStateUpdated.addListener onWebNav
-
 /*
 chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
   if tab.url
@@ -173,13 +185,9 @@ chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
 */
 
 chrome.runtime.onMessageExternal.addListener (request, sender, sendResponse) ->
-  console.log 'onMessageExternal'
-  console.log request
-  console.log 'sender for onMessageExternal is:'
-  console.log sender
   {type, data} = request
   message_handler = ext_message_handlers[type]
-  if type == 'requestfields'
+  if type == 'requestfields' or type == 'requestfields_uncached'
     # do not prompt for permissions for these urls
     whitelist = [
       'http://localhost:8080/previewdata.html'
@@ -187,22 +195,27 @@ chrome.runtime.onMessageExternal.addListener (request, sender, sendResponse) ->
       'https://tmi.netlify.com/previewdata.html'
       'https://tmi.stanford.edu/previewdata.html'
       'https://tmisurvey.herokuapp.com/'
+      'http://localhost:8080/'
       'https://localhost:8081/'
       'https://tmi.stanford.edu/'
+      'http://localhost:3000/'
+      'http://browsingsurvey.herokuapp.com/'
+      'https://browsingsurvey.herokuapp.com/'
     ]
     for whitelisted_url in whitelist
       if sender.url.indexOf(whitelisted_url) == 0
-        message_handler = message_handlers.requestfields
+        message_handler = message_handlers[type]
         break
   if not message_handler?
     return
   #tabId = sender.tab.id
   message_handler data, (response) ~>
-    console.log 'response is:'
-    console.log response
-    response_string = JSON.stringify(response)
-    console.log 'turned into response_string:'
-    console.log response_string
+    #console.log 'response is:'
+    #console.log response
+    #response_string = JSON.stringify(response)
+    #console.log 'length of response_string: ' + response_string.length
+    #console.log 'turned into response_string:'
+    #console.log response_string
     if sendResponse?
       sendResponse response
   return true # async response
@@ -216,8 +229,8 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
     return
   # tabId = sender.tab.id
   message_handler data, (response) ->
-    console.log 'message handler response:'
-    console.log response
+    #console.log 'message handler response:'
+    #console.log response
     #response_data = {response}
     #console.log response_data
     # chrome bug - doesn't seem to actually send the response back....
@@ -228,80 +241,3 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
     # if requestId? # response requested
     #  chrome.tabs.sendMessage tabId, {event: 'backgroundresponse', requestId, response}
   return true
-
-export page_to_time_spent_info = {}
-
-/*
-add_time_spent = (url, time) ->
-  if not page_to_time_spent[url]?
-    page_to_time_spent[url] = time
-  else
-    page_to_time_spent[url] += time
-*/
-
-current_page_info = {url: '', start: Date.now()}
-
-add_new_session = (url) ->
-  if not page_to_time_spent_info[url]?
-    page_to_time_spent_info[url] = []
-  page_to_time_spent_info[url].push {url, start: Date.now()}
-  current_page_info := page_to_time_spent_info[url][*-1]
-
-chrome.idle.onStateChanged.addListener (newstate) ->
-  console.log 'idle stateChanged: ' + newstate
-  if newstate == 'idle'
-    current_page_info.idle = Date.now()
-  else if newstate == 'locked'
-    current_page_info.locked = Date.now()
-  else if newstate == 'active'
-    add_new_session current_page_info.url
-
-activate_url = (url) ->
-  if url == current_page_info.url
-    if is_page_info_active(current_page_info)
-      return
-  add_new_session url
-
-total_time_spent_page_info = (page_info) ->
-  end_types = <[idle locked unfocused]>
-  end_time = Date.now()
-  for x in end_types
-    if page_info[x]?
-      end_time = Math.min(end_time, page_info[x])
-  return end_time
-
-is_page_info_active = (page_info) ->
-  end_types = <[idle locked unfocused]>
-  for x in end_types
-    if page_info[x]?
-      return false
-  return true
-
-chrome.tabs.onUpdated.addListener (tabid, changeinfo, tab) ->
-  console.log 'tabs updated: ' + tabid
-  console.log changeinfo
-  console.log tab
-  {url} = tab
-  activate_url url
-
-chrome.tabs.onActivated.addListener (tabinfo) ->
-  console.log 'active tabs changed:'
-  console.log tabinfo
-  tab <- chrome.tabs.get tabinfo.tabId
-  activate_url tab.url
-
-chrome.windows.onFocusChanged.addListener (windowid) ->
-  console.log 'focused window is:'
-  console.log windowid
-  active_tabs <- chrome.tabs.query {active: true, lastFocusedWindow: true}
-  console.log active_tabs
-  if active_tabs.length == 0
-    current_page_info.unfocused = Date.now()
-  else
-    url = active_tabs[0].url
-    add_new_session url
-  # Will be chrome.windows.WINDOW_ID_NONE if all chrome windows have lost focus.
-
-#setInterval ->
-#  console.log current_page_info
-#, 2000

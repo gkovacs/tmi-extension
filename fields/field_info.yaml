@@ -122,16 +122,64 @@ chrome_history_pages:
   description: Pages you have visited
   type: computed
 
+chrome_history_pages_past_24_hours:
+  description: Pages you have visited in the past 24 hours
+  type: computed
+
+chrome_history_pages_past_week:
+  description: Pages you have visited in the past week
+  type: computed
+
+chrome_history_pages_past_month:
+  description: Pages you have visited in the past month
+  type: computed
+
 chrome_history_visits:
   description: When you visited each page
+  type: computed
+
+chrome_history_visits_past_24_hours:
+  description: When you visited each page in the past 24 hours
+  type: computed
+
+chrome_history_visits_past_week:
+  description: When you visited each page in the past week
+  type: computed
+
+chrome_history_visits_past_month:
+  description: When you visited each page in the past month
   type: computed
 
 chrome_history_timespent_url:
   description: Time spent on each url
   type: computed
 
+chrome_history_timespent_url_past_24_hours:
+  description: Time spent on each url in the past 24 hours
+  type: computed
+
+chrome_history_timespent_url_past_week:
+  description: Time spent on each url in the past week
+  type: computed
+
+chrome_history_timespent_url_past_month:
+  description: Time spent on each url in the past month
+  type: computed
+
 chrome_history_timespent_domain:
   description: Time spent on each domain
+  type: computed
+
+chrome_history_timespent_domain_past_24_hours:
+  description: Time spent on each domain in the past 24 hours
+  type: computed
+
+chrome_history_timespent_domain_past_week:
+  description: Time spent on each domain in the past week
+  type: computed
+
+chrome_history_timespent_domain_past_month:
+  description: Time spent on each domain in the past month
   type: computed
 
 real_timespent_domain:
@@ -144,4 +192,56 @@ real_timespent_url:
 
 browsing_time_collection_starttime:
   description: Time at which collection of browsing time was started
+  type: computed
+
+facebook_frontpage:
+  description: Front page contents on Facebook
+  type: computed
+
+facebook_loggedin:
+  description: True if logged into facebook, false if not
+  type: computed
+
+facebook_shortname:
+  description: Your short name on Facebook
+  type: computed
+
+facebook_fullname:
+  description: Your full name on Facebook
+  type: computed
+
+facebook_id:
+  description: Your user id on Facebook
+  type: computed
+
+facebook_profilepic_small:
+  description: Your small profile pic on Facebook
+  type: computed
+
+facebook_profilepic:
+  description: Your profile pic on Facebook
+  type: computed
+
+chrome_history_earliest:
+  description: Earliest time in chrome history
+  type: computed
+
+extension_username:
+  description: Username within extension
+  type: computed
+
+chrome_history_total_timespent:
+  description: Total time spent online
+  type: computed
+
+chrome_history_num_days_with_browsing:
+  description: Number of days with browsing history
+  type: computed
+
+chrome_history_pages_compressed:
+  description: Visited pages compressed
+  type: computed
+
+chrome_history_visits_compressed_parts:
+  description: All visits compressed as parts
   type: computed

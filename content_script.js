@@ -53,7 +53,7 @@
     ndiv.id = 'autosurvey_content_script_loaded';
     return document.body.appendChild(ndiv);
   })();
-  console.log('content_script loaded');
+  console.log('autosurvey_content_script_loaded');
   sendBackground = function(type, data, callback){
     return chrome.runtime.sendMessage({
       type: type,
@@ -69,5 +69,4 @@
       location: location
     });
   };
-  load_experiment_for_location(window.location.href);
 }).call(this);

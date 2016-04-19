@@ -35,7 +35,7 @@ export string_to_function = (str) ->
   return new Function(lines.join('\n'))
 */
 (function(){
-  var root, special_aliases, resolve_aliases, get_field_to_getters, getcomp_uncached, getcomp, getfield_uncached, getfield, getfields, get_field_info, out$ = typeof exports != 'undefined' && exports || this;
+  var root, special_aliases, resolve_aliases, get_field_to_getters, getcomp_uncached, getcomp, getfield_uncached, getfield, getfields, getfields_uncached, get_field_info, out$ = typeof exports != 'undefined' && exports || this;
   root = typeof exports != 'undefined' && exports !== null ? exports : this;
   special_aliases = {
     'all_vars': function(callback){
@@ -215,6 +215,22 @@ export string_to_function = (str) ->
     return resolve_aliases(fieldname_list, function(real_fieldname_list){
       return async.eachSeries(real_fieldname_list, function(name, ncallback){
         return getfield(name, function(val){
+          output[name] = val;
+          return ncallback();
+        });
+      }, function(){
+        if (callback != null) {
+          return callback(output);
+        }
+      });
+    });
+  };
+  out$.getfields_uncached = getfields_uncached = function(fieldname_list, callback){
+    var output;
+    output = {};
+    return resolve_aliases(fieldname_list, function(real_fieldname_list){
+      return async.eachSeries(real_fieldname_list, function(name, ncallback){
+        return getfield_uncached(name, function(val){
           output[name] = val;
           return ncallback();
         });
