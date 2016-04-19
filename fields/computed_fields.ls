@@ -184,7 +184,7 @@ export computed_fields =
         continue
       seen_urls[url] = true
       url_list.push url
-    list_of_url_lists = split_list_by_length url_list, 100
+    list_of_url_lists = split_list_by_length url_list, 500
     output = []
     <- async.eachSeries list_of_url_lists, (url_list_part, donecb1) ->
       url_to_visits = {}

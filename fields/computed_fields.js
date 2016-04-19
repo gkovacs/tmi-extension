@@ -424,7 +424,7 @@
           seen_urls[url] = true;
           url_list.push(url);
         }
-        list_of_url_lists = split_list_by_length(url_list, 100);
+        list_of_url_lists = split_list_by_length(url_list, 500);
         output = [];
         return async.eachSeries(list_of_url_lists, function(url_list_part, donecb1){
           var url_to_visits;
