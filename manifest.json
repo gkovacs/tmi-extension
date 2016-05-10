@@ -38,7 +38,19 @@
       "*://autosurvey.herokuapp.com/*",
       "*://tmisurvey.herokuapp.com/*",
       "*://tmi.stanford.edu/*",
-      "*://browsingsurvey.herokuapp.com/*"
+      "*://browsingsurvey.herokuapp.com/*",
+      "*://browsingsurvey2.herokuapp.com/*",
+      "*://browsingsurvey3.herokuapp.com/*",
+      "*://browsingsurvey4.herokuapp.com/*",
+      "*://browsingsurvey5.herokuapp.com/*",
+      "*://browsingsurvey6.herokuapp.com/*",
+      "*://browsingsurvey7.herokuapp.com/*",
+      "*://browsingsurvey8.herokuapp.com/*",
+      "*://browsingsurvey9.herokuapp.com/*",
+      "*://browsingsurvey10.herokuapp.com/*",
+      "*://browsingsurvey11.herokuapp.com/*",
+      "*://browsingsurvey12.herokuapp.com/*",
+      "*://browsingsurvey13.herokuapp.com/*"
     ]
   },
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxD4UtAX7JkCi1B3FsfHs9tHqT4ODgZ7RSBA60DmK5gK5HRsD0/Ls3LQJ7vs1xntVTIrVgVn1HGBM8d/ZBF1H7Vtm47mkh3K2ZhylD2S9aeKb9XfUji9tokCQDQy2MmgKWWZpSzSbs+OpWCLNcSEHAQLsKPYISoMSUVfOcYVpH+E3K00JbWuh81T8ZCmdEviLtA7EtTFtYcTuYx+L/6mBlGXZFd0cJLOUKKhSgqm9Dd3ZQWOSe6coT9YRni0UUmWSsKSgLNl000Fcq3WRGlGbimMpSORw8sYwFp2vVJkIy2QBImeinUNqKnWkdaX0fBWqJYUR2L4suCN5hSZtbQTqXwIDAQAB"
